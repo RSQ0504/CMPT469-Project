@@ -14,7 +14,6 @@ struct RectangleButton: View {
             ZStack {
                 Button(action: {
                     self.selectedButtonNames.append(self.name)
-                    // Trigger haptic feedback
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
                 }) {
@@ -58,17 +57,34 @@ struct ContentView: View {
     @State private var selectedButtonNames: [String] = []
     @State private var singleLineText: String = ""
 
-    struct RectangleButtonProperties: Identifiable {
-        var id = UUID() // Generate unique identifier
+    struct RectangleButtonProperties: Identifiable, Encodable {
+        var id = UUID()
         var size: CGSize
         var name: String
-        var position: CGPoint // Position of the button
+        var position: CGPoint 
+        
+        private enum CodingKeys: String, CodingKey {
+            case id, size, name, position
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(id, forKey: .id)
+            try container.encode(size, forKey: .size)
+            try container.encode(name, forKey: .name)
+            
+            // Encode CGPoint
+            let positionX = Double(position.x)
+            let positionY = Double(position.y)
+            try container.encode(positionX, forKey: .position)
+            try container.encode(positionY, forKey: .position)
+        }
     }
 
     var body: some View {
         VStack {
             HStack{
-                Button(action: { isPopoverPresented.toggle() }) { // Show popover when clicked
+                Button(action: { isPopoverPresented.toggle() }) {
                     Image(systemName: "plus")
                 }
                 .padding()
@@ -119,7 +135,17 @@ struct ContentView: View {
                     Image(systemName: "arrow.uturn.backward")
                 }
                 .padding(.trailing)
-
+                
+                Button(action: {
+                    saveRectButtonsToJson()
+                }) {
+                    Image(systemName: "square.and.arrow.down")
+                        .font(.title)
+                }
+                .padding()
+            }
+            HStack{
+                Text("\(selectedButtonNames.joined(separator: ""))") // Text box below the lock button
                 Button(action: {
                     clearTextBoard()
                 }) {
@@ -127,7 +153,6 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            Text("\(selectedButtonNames.joined(separator: ""))") // Text box below the lock button
             Divider()
             ZStack {
                 ForEach(rectangleButtons) { button in
@@ -135,6 +160,30 @@ struct ContentView: View {
                         .position(button.position)
                 }
             }
+        }
+    }
+    
+    func saveRectButtonsToJson() {
+        // Convert rectangleButtons array to data
+        do {
+            let encoder = JSONEncoder()
+            let jsonData = try encoder.encode(rectangleButtons)
+
+            // Get documents directory URL
+            if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateFormat = "yyyyMMdd_HHmmss" // Format for generating unique filename
+                let fileName = "rectangleButtons_\(dateFormatter.string(from: Date())).json"
+                let fileURL = documentsDirectory.appendingPathComponent(fileName)
+
+                // Write data to file
+                try jsonData.write(to: fileURL)
+
+                // Inform user
+                print("Rectangle buttons saved to: \(fileURL)")
+            }
+        } catch {
+            print("Error saving rectangle buttons:", error)
         }
     }
 

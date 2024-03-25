@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import UniformTypeIdentifiers
 
 struct RectangleButton: View {
     var size: CGSize
@@ -57,7 +58,7 @@ struct ContentView: View {
     @State private var selectedButtonNames: [String] = []
     @State private var singleLineText: String = ""
 
-    struct RectangleButtonProperties: Identifiable, Encodable {
+    struct RectangleButtonProperties: Identifiable, Encodable, Decodable {
         var id = UUID()
         var size: CGSize
         var name: String
@@ -78,6 +79,25 @@ struct ContentView: View {
             let positionY = Double(position.y)
             try container.encode(positionX, forKey: .position)
             try container.encode(positionY, forKey: .position)
+        }
+        
+        init(id: UUID = UUID(), size: CGSize, name: String, position: CGPoint) {
+            self.id = id
+            self.size = size
+            self.name = name
+            self.position = position
+        }
+        
+        // Implementing Decodable initializer
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.id = try container.decode(UUID.self, forKey: .id)
+            self.size = try container.decode(CGSize.self, forKey: .size)
+            self.name = try container.decode(String.self, forKey: .name)
+            
+            let positionX = try container.decode(Double.self, forKey: .position)
+            let positionY = try container.decode(Double.self, forKey: .position)
+            self.position = CGPoint(x: positionX, y: positionY)
         }
     }
 
@@ -143,6 +163,14 @@ struct ContentView: View {
                         .font(.title)
                 }
                 .padding()
+                
+                Button(action: {
+                    importRectButtonsFromJSON()
+                }) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.title)
+                }
+                .padding()
             }
             HStack{
                 Text("\(selectedButtonNames.joined(separator: ""))") // Text box below the lock button
@@ -187,6 +215,23 @@ struct ContentView: View {
         }
     }
 
+    func importRectButtonsFromJSON() {
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.json])
+        documentPicker.allowsMultipleSelection = false
+        documentPicker.delegate = DocumentPickerDelegate(importHandler: handleImportedJSON)
+        UIApplication.shared.windows.first?.rootViewController?.present(documentPicker, animated: true, completion: nil)
+    }
+    
+    func handleImportedJSON(data: Data) {
+        do {
+            let decoder = JSONDecoder()
+            let decodedButtons = try decoder.decode([RectangleButtonProperties].self, from: data)
+            rectangleButtons.append(contentsOf: decodedButtons)
+        } catch {
+            print("Error decoding JSON:", error)
+        }
+    }
+    
     func addRectangleButton(size: CGSize, name: String) {
         let centerAreaWidth = UIScreen.main.bounds.width / 2
         let centerAreaHeight = UIScreen.main.bounds.height / 2
@@ -219,6 +264,24 @@ struct ContentView: View {
 
     func clearTextBoard() {
         selectedButtonNames.removeAll()
+    }
+}
+
+class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
+    let importHandler: (Data) -> Void
+    
+    init(importHandler: @escaping (Data) -> Void) {
+        self.importHandler = importHandler
+    }
+    
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        do {
+            let data = try Data(contentsOf: url)
+            importHandler(data)
+        } catch {
+            print("Error reading file:", error)
+        }
     }
 }
 

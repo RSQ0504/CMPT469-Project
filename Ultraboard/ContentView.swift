@@ -47,6 +47,19 @@ struct RectangleButton: View {
     }
 }
 
+class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
+    var parent: ContentView?
+
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        do {
+            let data = try Data(contentsOf: url)
+            parent?.handleImportedJSON(data: data)
+        } catch {
+            print("Error reading file:", error)
+        }
+    }
+}
 
 struct ContentView: View {
     @State private var rectangleButtons: [RectangleButtonProperties] = []
@@ -57,6 +70,7 @@ struct ContentView: View {
     @State private var isLocked = false
     @State private var selectedButtonNames: [String] = []
     @State private var singleLineText: String = ""
+    private let documentPickerDelegate = DocumentPickerDelegate()
 
     struct RectangleButtonProperties: Identifiable, Encodable, Decodable {
         var id = UUID()
@@ -189,10 +203,11 @@ struct ContentView: View {
                 }
             }
         }
+        .onAppear {
+                documentPickerDelegate.parent = self
+            }
     }
-    
     func saveRectButtonsToJson() {
-        // Convert rectangleButtons array to data
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(rectangleButtons)
@@ -203,22 +218,18 @@ struct ContentView: View {
                 dateFormatter.dateFormat = "yyyyMMdd_HHmmss" // Format for generating unique filename
                 let fileName = "rectangleButtons_\(dateFormatter.string(from: Date())).json"
                 let fileURL = documentsDirectory.appendingPathComponent(fileName)
-
-                // Write data to file
                 try jsonData.write(to: fileURL)
-
-                // Inform user
                 print("Rectangle buttons saved to: \(fileURL)")
             }
         } catch {
             print("Error saving rectangle buttons:", error)
         }
     }
-
+    
     func importRectButtonsFromJSON() {
-        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.json])
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [UTType.json], asCopy: true)
         documentPicker.allowsMultipleSelection = false
-        documentPicker.delegate = DocumentPickerDelegate(importHandler: handleImportedJSON)
+        documentPicker.delegate = documentPickerDelegate
         UIApplication.shared.windows.first?.rootViewController?.present(documentPicker, animated: true, completion: nil)
     }
     
@@ -267,23 +278,6 @@ struct ContentView: View {
     }
 }
 
-class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
-    let importHandler: (Data) -> Void
-    
-    init(importHandler: @escaping (Data) -> Void) {
-        self.importHandler = importHandler
-    }
-    
-    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        guard let url = urls.first else { return }
-        do {
-            let data = try Data(contentsOf: url)
-            importHandler(data)
-        } catch {
-            print("Error reading file:", error)
-        }
-    }
-}
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {

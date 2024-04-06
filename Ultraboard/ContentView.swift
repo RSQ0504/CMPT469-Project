@@ -61,6 +61,22 @@ class DocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
     }
 }
 
+class SaveDocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
+    var jsonData: Data?
+
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        guard let url = urls.first else { return }
+        do {
+            if let data = jsonData {
+                try data.write(to: url)
+                print("JSON data saved to: \(url)")
+            }
+        } catch {
+            print("Error saving JSON data:", error)
+        }
+    }
+}
+
 struct ContentView: View {
     @State private var rectangleButtons: [RectangleButtonProperties] = []
     @State private var widthText: String = "100"
@@ -71,6 +87,8 @@ struct ContentView: View {
     @State private var selectedButtonNames: [String] = []
     @State private var singleLineText: String = ""
     private let documentPickerDelegate = DocumentPickerDelegate()
+    private let saveDocumentPickerDelegate = SaveDocumentPickerDelegate()
+
 
     struct RectangleButtonProperties: Identifiable, Encodable, Decodable {
         var id = UUID()
@@ -212,16 +230,13 @@ struct ContentView: View {
         do {
             let encoder = JSONEncoder()
             let jsonData = try encoder.encode(rectangleButtons)
-
-            // Get documents directory URL
-            if let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                let dateFormatter = DateFormatter()
-                dateFormatter.dateFormat = "yyyyMMdd_HHmmss" // Format for generating unique filename
-                let fileName = "rectangleButtons_\(dateFormatter.string(from: Date())).json"
-                let fileURL = documentsDirectory.appendingPathComponent(fileName)
-                try jsonData.write(to: fileURL)
-                print("Rectangle buttons saved to: \(fileURL)")
-            }
+            saveDocumentPickerDelegate.jsonData = jsonData
+            let fileManager = FileManager.default
+            let fileURL = fileManager.temporaryDirectory.appendingPathComponent("temp.json")
+            try jsonData.write(to: fileURL)
+            let documentPicker = UIDocumentPickerViewController(forExporting: [fileURL])
+            documentPicker.delegate = saveDocumentPickerDelegate
+            UIApplication.shared.windows.first?.rootViewController?.present(documentPicker, animated: true, completion: nil)
         } catch {
             print("Error saving rectangle buttons:", error)
         }

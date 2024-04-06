@@ -118,44 +118,6 @@ struct ContentView: View {
     var body: some View {
         VStack {
             HStack{
-                Button(action: { isPopoverPresented.toggle() }) {
-                    Image(systemName: "plus")
-                }
-                .padding()
-                .popover(isPresented: $isPopoverPresented, content: {
-                    VStack {
-                        HStack {
-                            TextField("Width", text: $widthText, onCommit: {})
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding()
-
-                            TextField("Height", text: $heightText, onCommit: {})
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding()
-                        }
-
-                        TextField("Name", text: $newName, onCommit: {})
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding()
-
-                        Button("Add", action: {
-                            if let width = Double(widthText), let height = Double(heightText) {
-                                addRectangleButton(size: CGSize(width: width, height: height), name: newName)
-                                isPopoverPresented = false // Dismiss popover after adding button
-                            }
-                        })
-                        .padding()
-                    }
-                    .padding()
-                })
-
-                Button(action: {
-                    removeAllButtons()
-                }) {
-                    Image(systemName: "trash")
-                }
-                .padding()
-
                 Button(action: {
                     isLocked.toggle()
                 }) {
@@ -163,12 +125,51 @@ struct ContentView: View {
                 }
                 .padding()
 
-                Button(action: {
-                    recallLatestButton()
-                }) {
-                    Image(systemName: "arrow.uturn.backward")
+                if !isLocked {
+                    Button(action: { isPopoverPresented.toggle() }) {
+                        Image(systemName: "plus")
+                    }
+                    .padding()
+                    .popover(isPresented: $isPopoverPresented, content: {
+                        VStack {
+                            HStack {
+                                TextField("Width", text: $widthText, onCommit: {})
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .padding()
+                                
+                                TextField("Height", text: $heightText, onCommit: {})
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .padding()
+                            }
+                            
+                            TextField("Name", text: $newName, onCommit: {})
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding()
+                            
+                            Button("Add", action: {
+                                if let width = Double(widthText), let height = Double(heightText) {
+                                    addRectangleButton(size: CGSize(width: width, height: height), name: newName)
+                                    isPopoverPresented = false // Dismiss popover after adding button
+                                }
+                            })
+                            .padding()
+                        }
+                        .padding()
+                    })
+                    
+                    Button(action: {
+                        removeAllButtons()
+                    }) {
+                        Image(systemName: "trash")
+                    }
+                    .padding()
+                    Button(action: {
+                        recallLatestButton()
+                    }) {
+                        Image(systemName: "arrow.uturn.backward")
+                    }
+                    .padding(.trailing)
                 }
-                .padding(.trailing)
                 
                 Button(action: {
                     saveRectButtonsToJson()

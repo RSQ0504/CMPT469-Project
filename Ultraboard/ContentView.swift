@@ -206,15 +206,6 @@ struct ContentView: View {
                 }
                 .padding()
             }
-            HStack{
-                Text("\(selectedButtonNames.joined(separator: ""))") // Text box below the lock button
-                Button(action: {
-                    clearTextBoard()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                }
-                .padding()
-            }
             Divider()
             ZStack {
                 ForEach(rectangleButtons.indices, id: \.self) { index in
@@ -277,8 +268,8 @@ struct ContentView: View {
         let maxX = minX + centerAreaWidth - size.width
         let maxY = minY + centerAreaHeight - size.height
 
-        let randomX = CGFloat.random(in: minX...maxX)
-        let randomY = CGFloat.random(in: minY...maxY)
+        let randomX = centerAreaWidth
+        let randomY = centerAreaHeight
 
         let position = CGPoint(x: randomX, y: randomY)
         let rotationAngle = Angle(degrees: 0.0) // Initial rotation angle

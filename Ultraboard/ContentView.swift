@@ -90,7 +90,8 @@ struct ContentView: View {
     @State private var singleLineText: String = ""
     private let documentPickerDelegate = DocumentPickerDelegate()
     private let saveDocumentPickerDelegate = SaveDocumentPickerDelegate()
-
+    private let client = TCPClient(host: "127.0.0.1", port: 1000)
+    
 
     struct RectangleButtonProperties: Identifiable, Encodable, Decodable {
         var id = UUID()
@@ -282,6 +283,7 @@ struct ContentView: View {
         widthText = "100"
         heightText = "50"
         newName = ""
+        client.send(message: "Hello, server!")
     }
 
     func removeAllButtons() {

@@ -3,10 +3,10 @@ import UIKit
 import UniformTypeIdentifiers
 
 struct RectangleButton: View {
-    var size: CGSize
-    var name: String
-    @State private var dragAmount: CGPoint?
-    @State private var rotationAngle: Angle = .zero
+    @Binding var size: CGSize
+    @Binding var name: String
+    @Binding var position: CGPoint // Binding for dragAmount
+    @Binding var rotationAngle: Angle // Binding for rotationAngle
     @Binding var isLocked: Bool
     @Binding var selectedButtonNames: [String]
 
@@ -27,18 +27,20 @@ struct RectangleButton: View {
                             .font(.system(.caption, design: .serif))
                     }
                 }
-                .animation(.default, value: dragAmount)
-                .position(self.dragAmount ?? CGPoint(x: gp.size.width / 2, y: gp.size.height / 2))
+                .animation(.default, value: position)
+                .position(self.position)
                 .highPriorityGesture(
                     DragGesture()
-                        .onChanged { self.dragAmount = isLocked ? self.dragAmount : $0.location }
+                        .onChanged { value in
+                            self.position = isLocked ? self.position : value.location // Update dragAmount
+                        }
                 )
                 .rotationEffect(rotationAngle)
 
                 .gesture(
                     RotationGesture()
                         .onChanged { angle in
-                            self.rotationAngle = isLocked ? self.rotationAngle : angle
+                            self.rotationAngle = isLocked ? self.rotationAngle : angle // Update rotationAngle
                         }
                 )
             }
@@ -94,10 +96,11 @@ struct ContentView: View {
         var id = UUID()
         var size: CGSize
         var name: String
-        var position: CGPoint 
+        var position: CGPoint
+        var rotationAngle: Angle // Include rotation angle
         
         private enum CodingKeys: String, CodingKey {
-            case id, size, name, position
+            case id, size, name, position, rotationAngle
         }
         
         func encode(to encoder: Encoder) throws {
@@ -105,31 +108,26 @@ struct ContentView: View {
             try container.encode(id, forKey: .id)
             try container.encode(size, forKey: .size)
             try container.encode(name, forKey: .name)
-            
-            // Encode CGPoint
-            let positionX = Double(position.x)
-            let positionY = Double(position.y)
-            try container.encode(positionX, forKey: .position)
-            try container.encode(positionY, forKey: .position)
+            try container.encode(position, forKey: .position)
+            try container.encode(rotationAngle.degrees, forKey: .rotationAngle)
         }
         
-        init(id: UUID = UUID(), size: CGSize, name: String, position: CGPoint) {
+        init(id: UUID = UUID(), size: CGSize, name: String, position: CGPoint, rotationAngle: Angle) {
             self.id = id
             self.size = size
             self.name = name
             self.position = position
+            self.rotationAngle = rotationAngle
         }
         
-        // Implementing Decodable initializer
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.id = try container.decode(UUID.self, forKey: .id)
             self.size = try container.decode(CGSize.self, forKey: .size)
             self.name = try container.decode(String.self, forKey: .name)
-            
-            let positionX = try container.decode(Double.self, forKey: .position)
-            let positionY = try container.decode(Double.self, forKey: .position)
-            self.position = CGPoint(x: positionX, y: positionY)
+            self.position = try container.decode(CGPoint.self, forKey: .position)
+            let rotationAngleInDegrees = try container.decode(Double.self, forKey: .rotationAngle)
+            self.rotationAngle = Angle(degrees: rotationAngleInDegrees)
         }
     }
 
@@ -216,9 +214,15 @@ struct ContentView: View {
             }
             Divider()
             ZStack {
-                ForEach(rectangleButtons) { button in
-                    RectangleButton(size: button.size, name: button.name, isLocked: $isLocked, selectedButtonNames: $selectedButtonNames)
-                        .position(button.position)
+                ForEach(rectangleButtons.indices, id: \.self) { index in
+                    RectangleButton(size: self.$rectangleButtons[index].size, // Pass binding
+                                    name: self.$rectangleButtons[index].name,
+                                    position: self.$rectangleButtons[index].position, // Pass binding
+                                    rotationAngle: self.$rectangleButtons[index].rotationAngle, // Pass binding
+                                    isLocked: self.$isLocked,
+                                    selectedButtonNames: self.$selectedButtonNames)
+                    .position(rectangleButtons[index].position)
+                        .rotationEffect(rectangleButtons[index].rotationAngle)
                 }
             }
         }
@@ -229,6 +233,7 @@ struct ContentView: View {
     func saveRectButtonsToJson() {
         do {
             let encoder = JSONEncoder()
+            encoder.outputFormatting = .prettyPrinted
             let jsonData = try encoder.encode(rectangleButtons)
             saveDocumentPickerDelegate.jsonData = jsonData
             let fileManager = FileManager.default
@@ -272,7 +277,8 @@ struct ContentView: View {
         let randomY = CGFloat.random(in: minY...maxY)
 
         let position = CGPoint(x: randomX, y: randomY)
-        rectangleButtons.append(RectangleButtonProperties(size: size, name: name, position: position))
+        let rotationAngle = Angle(degrees: 0.0) // Initial rotation angle
+        rectangleButtons.append(RectangleButtonProperties(size: size, name: name, position: position, rotationAngle: rotationAngle))
         widthText = "100"
         heightText = "50"
         newName = ""

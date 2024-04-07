@@ -224,7 +224,7 @@ struct ContentView: View {
                                     rotationAngle: self.$rectangleButtons[index].rotationAngle, // Pass binding
                                     isLocked: self.$isLocked,
                                     selectedButtonNames: self.$selectedButtonNames,
-                                    client:self.client)
+                                    client:client)
                     .position(rectangleButtons[index].position)
                         .rotationEffect(rectangleButtons[index].rotationAngle)
                 }

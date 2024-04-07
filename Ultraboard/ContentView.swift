@@ -10,15 +10,15 @@ struct RectangleButton: View {
     @Binding var isLocked: Bool
     @Binding var selectedButtonNames: [String]
     var client: TCPClient
-
+    @State private var holdDown = false
     var body: some View {
         GeometryReader { gp in
             ZStack {
                 Button(action: {
-                    self.selectedButtonNames.append(self.name)
-                    client.send(message: self.name)
-                    let generator = UIImpactFeedbackGenerator(style: .medium)
-                    generator.impactOccurred()
+//                    self.selectedButtonNames.append(self.name)
+//                    client.send(message: self.name + "press")
+//                    let generator = UIImpactFeedbackGenerator(style: .medium)
+//                    generator.impactOccurred()
                 }) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
@@ -32,9 +32,19 @@ struct RectangleButton: View {
                 .animation(.default, value: position)
                 .position(self.position)
                 .highPriorityGesture(
-                    DragGesture()
+                    DragGesture(minimumDistance: 0)
                         .onChanged { value in
                             self.position = isLocked ? self.position : value.location // Update dragAmount
+                            if isLocked && !holdDown{
+                                print("lock down")
+                                holdDown = true
+                            }
+                        }
+                        .onEnded {value in
+                            if isLocked {
+                                print("lock up")
+                                holdDown = false
+                            }
                         }
                 )
                 .rotationEffect(rotationAngle)

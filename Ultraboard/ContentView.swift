@@ -9,12 +9,14 @@ struct RectangleButton: View {
     @Binding var rotationAngle: Angle // Binding for rotationAngle
     @Binding var isLocked: Bool
     @Binding var selectedButtonNames: [String]
+    var client: TCPClient
 
     var body: some View {
         GeometryReader { gp in
             ZStack {
                 Button(action: {
                     self.selectedButtonNames.append(self.name)
+                    client.send(message: self.name)
                     let generator = UIImpactFeedbackGenerator(style: .medium)
                     generator.impactOccurred()
                 }) {
@@ -221,7 +223,8 @@ struct ContentView: View {
                                     position: self.$rectangleButtons[index].position, // Pass binding
                                     rotationAngle: self.$rectangleButtons[index].rotationAngle, // Pass binding
                                     isLocked: self.$isLocked,
-                                    selectedButtonNames: self.$selectedButtonNames)
+                                    selectedButtonNames: self.$selectedButtonNames,
+                                    client:self.client)
                     .position(rectangleButtons[index].position)
                         .rotationEffect(rectangleButtons[index].rotationAngle)
                 }
@@ -283,7 +286,6 @@ struct ContentView: View {
         widthText = "100"
         heightText = "50"
         newName = ""
-        client.send(message: "Hello, server!")
     }
 
     func removeAllButtons() {

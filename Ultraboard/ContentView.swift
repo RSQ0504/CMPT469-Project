@@ -38,7 +38,7 @@ struct RectangleButton: View {
                             self.position = isLocked ? self.position : value.location // Update dragAmount
                             if isLocked && !holdDown{
                                 self.selectedButtonNames.append(self.name)
-                                client.send(message: self.name)
+                                client.send(message: "{"+self.name+"}")
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                 generator.impactOccurred()
                                 holdDown = true
@@ -47,7 +47,7 @@ struct RectangleButton: View {
                         .onEnded {value in
                             if isLocked && isSpecial {
                                 self.selectedButtonNames.append(self.name)
-                                client.send(message: self.name+"_end")
+                                client.send(message: "{"+self.name+"_end}")
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                 generator.impactOccurred()
                             }

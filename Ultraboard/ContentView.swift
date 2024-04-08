@@ -364,7 +364,7 @@ struct ContentView: View {
         let position = CGPoint(x: randomX, y: randomY)
         let rotationAngle = Angle(degrees: 0.0) // Initial rotation angle
         rectangleButtons.append(RectangleButtonProperties(size: size, name: name, position: position, rotationAngle: rotationAngle,isSpecial:false))
-        widthText = "100"
+        widthText = "50"
         heightText = "50"
         newName = ""
     }
@@ -379,7 +379,7 @@ struct ContentView: View {
         let position = CGPoint(x: randomX, y: randomY)
         let rotationAngle = Angle(degrees: 0.0) // Initial rotation angle
         rectangleButtons.append(RectangleButtonProperties(size: size, name: name, position: position, rotationAngle: rotationAngle,isSpecial:true))
-        widthText = "100"
+        widthText = "50"
         heightText = "50"
         newName = ""
     }

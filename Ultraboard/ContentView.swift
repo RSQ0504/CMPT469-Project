@@ -100,8 +100,8 @@ class SaveDocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
 
 struct ContentView: View {
     @State private var rectangleButtons: [RectangleButtonProperties] = []
-    @State private var widthText: String = "50"
-    @State private var heightText: String = "50"
+    @State private var widthText: String = "75"
+    @State private var heightText: String = "75"
     @State private var newName: String = ""
     @State private var isPopoverPresented1 = false
     @State private var isPopoverPresented2 = false
@@ -364,8 +364,8 @@ struct ContentView: View {
         let position = CGPoint(x: randomX, y: randomY)
         let rotationAngle = Angle(degrees: 0.0) // Initial rotation angle
         rectangleButtons.append(RectangleButtonProperties(size: size, name: name, position: position, rotationAngle: rotationAngle,isSpecial:false))
-        widthText = "50"
-        heightText = "50"
+        widthText = "75"
+        heightText = "75"
         newName = ""
     }
     
@@ -379,8 +379,8 @@ struct ContentView: View {
         let position = CGPoint(x: randomX, y: randomY)
         let rotationAngle = Angle(degrees: 0.0) // Initial rotation angle
         rectangleButtons.append(RectangleButtonProperties(size: size, name: name, position: position, rotationAngle: rotationAngle,isSpecial:true))
-        widthText = "50"
-        heightText = "50"
+        widthText = "75"
+        heightText = "75"
         newName = ""
     }
 

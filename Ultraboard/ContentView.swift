@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
-
+var client =  TCPClient(host: "127.0.0.1", port: 1000)
 struct RectangleButton: View {
     @Binding var size: CGSize
     @Binding var name: String
@@ -100,11 +100,12 @@ class SaveDocumentPickerDelegate: NSObject, UIDocumentPickerDelegate {
 
 struct ContentView: View {
     @State private var rectangleButtons: [RectangleButtonProperties] = []
-    @State private var widthText: String = "100"
+    @State private var widthText: String = "50"
     @State private var heightText: String = "50"
     @State private var newName: String = ""
     @State private var isPopoverPresented1 = false
     @State private var isPopoverPresented2 = false
+    @State private var isPopoverPresented = false
     @State private var isLocked = false
     @State private var selectedButtonNames: [String] = []
     @State private var singleLineText: String = ""
@@ -112,7 +113,8 @@ struct ContentView: View {
     let names = ["Command", "Shift", "Option", "Control"]
     private let documentPickerDelegate = DocumentPickerDelegate()
     private let saveDocumentPickerDelegate = SaveDocumentPickerDelegate()
-    private let client = TCPClient(host: "127.0.0.1", port: 1000)
+    @State private var host = "127.0.0.1"
+    @State private var port = 1000
     
 
     struct RectangleButtonProperties: Identifiable, Encodable, Decodable {
@@ -233,6 +235,40 @@ struct ContentView: View {
                         }
                         .padding()
                     })
+                    
+                    Button(action: { isPopoverPresented.toggle() }) {
+                        Image(systemName: "link")
+                    }
+                    .padding()
+                    .popover(isPresented: $isPopoverPresented, content: {
+                        VStack {
+                            HStack {
+                                TextField("host", text: $host, onCommit: {})
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                                    .padding()
+                                
+                                TextField("Port", text: Binding<String>(
+                                    get: { String(port) },
+                                    set: { newValue in
+                                        if let newPort = Int(newValue) {
+                                            port = newPort
+                                        }
+                                    }
+                                ))
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                                .padding()
+
+                            }
+                        
+                            
+                            Button("Comfirm", action: {
+                                client = TCPClient(host: host, port: port)
+                                isPopoverPresented = false // Dismiss popover after adding button
+                            })
+                            .padding()
+                        }
+                        .padding()
+                    })
 
                     Button(action: {
                         removeAllButtons()
@@ -322,11 +358,6 @@ struct ContentView: View {
         let centerAreaWidth = UIScreen.main.bounds.width / 2
         let centerAreaHeight = UIScreen.main.bounds.height / 2
 
-        let minX = (UIScreen.main.bounds.width - centerAreaWidth) / 2
-        let minY = (UIScreen.main.bounds.height - centerAreaHeight) / 2
-        let maxX = minX + centerAreaWidth - size.width
-        let maxY = minY + centerAreaHeight - size.height
-
         let randomX = centerAreaWidth
         let randomY = centerAreaHeight
 
@@ -341,11 +372,6 @@ struct ContentView: View {
     func addRectangleButtonSpecial(size: CGSize, name: String) {
         let centerAreaWidth = UIScreen.main.bounds.width / 2
         let centerAreaHeight = UIScreen.main.bounds.height / 2
-
-        let minX = (UIScreen.main.bounds.width - centerAreaWidth) / 2
-        let minY = (UIScreen.main.bounds.height - centerAreaHeight) / 2
-        let maxX = minX + centerAreaWidth - size.width
-        let maxY = minY + centerAreaHeight - size.height
 
         let randomX = centerAreaWidth
         let randomY = centerAreaHeight

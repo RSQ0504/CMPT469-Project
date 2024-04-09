@@ -112,7 +112,7 @@ struct ContentView: View {
     @State private var selectedButtonNames: [String] = []
     @State private var singleLineText: String = ""
     @State private var selectedOption = 0 // Default selection
-    let names = ["Command", "Shift", "Option", "Control"]
+    let names = ["Command", "Shift", "Option", "Control", "Backspace","Esc", "Capslock"]
     private let documentPickerDelegate = DocumentPickerDelegate()
     private let saveDocumentPickerDelegate = SaveDocumentPickerDelegate()
     @State private var host = "127.0.0.1"
@@ -264,6 +264,7 @@ struct ContentView: View {
                         
                             
                             Button("Comfirm", action: {
+                                client.disconnect()
                                 client = TCPClient(host: host, port: port)
                                 isPopoverPresented = false // Dismiss popover after adding button
                             })

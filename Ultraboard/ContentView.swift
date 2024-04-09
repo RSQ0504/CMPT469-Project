@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
+import AudioToolbox
 var client =  TCPClient(host: "127.0.0.1", port: 1000)
 struct RectangleButton: View {
     @Binding var size: CGSize
@@ -41,6 +42,7 @@ struct RectangleButton: View {
                                 client.send(message: "{"+self.name+"}")
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                 generator.impactOccurred()
+                                AudioServicesPlaySystemSound(SystemSoundID(1104))
                                 holdDown = true
                             }
                         }

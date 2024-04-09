@@ -49,14 +49,14 @@ struct RectangleButton: View {
                         .onEnded {value in
                             if isLocked{
                                 self.selectedButtonNames.append(self.name)
-                                client.send(message: "{"+self.name+"_end}")
+                                client.send(message: "{"+self.name+"_up}")
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                 generator.impactOccurred()
                             }
                             holdDown = false
                         }
                 )
-                .rotationEffect(rotationAngle)
+                .rotationEffect(rotationAngle,anchor:.center)
 
                 .gesture(
                     RotationGesture()
@@ -65,7 +65,7 @@ struct RectangleButton: View {
                         }
                 )
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(width: gp.size.width, height: gp.size.height)
         }
     }
 }
@@ -289,7 +289,7 @@ struct ContentView: View {
                 Button(action: {
                     saveRectButtonsToJson()
                 }) {
-                    Image(systemName: "square.and.arrow.down")
+                    Image(systemName: "square.and.arrow.up")
                         .font(.title)
                 }
                 .padding()
@@ -297,7 +297,7 @@ struct ContentView: View {
                 Button(action: {
                     importRectButtonsFromJSON()
                 }) {
-                    Image(systemName: "square.and.arrow.up")
+                    Image(systemName: "square.and.arrow.down")
                         .font(.title)
                 }
                 .padding()
@@ -313,8 +313,8 @@ struct ContentView: View {
                                     selectedButtonNames: self.$selectedButtonNames,
                                     client:client,
                                     isSpecial: self.$rectangleButtons[index].isSpecial)
-                    .position(rectangleButtons[index].position)
-                        .rotationEffect(rectangleButtons[index].rotationAngle)
+//                    .position(rectangleButtons[index].position)
+//                    .rotationEffect(rectangleButtons[index].rotationAngle)
                 }
             }
         }

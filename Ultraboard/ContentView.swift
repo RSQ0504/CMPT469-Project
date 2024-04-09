@@ -45,7 +45,7 @@ struct RectangleButton: View {
                             }
                         }
                         .onEnded {value in
-                            if isLocked && isSpecial {
+                            if isLocked{
                                 self.selectedButtonNames.append(self.name)
                                 client.send(message: "{"+self.name+"_end}")
                                 let generator = UIImpactFeedbackGenerator(style: .medium)

@@ -1,0 +1,7 @@
+BasedOnStyle: Google
+IndentWidth: 4
+ColumnLimit: 105
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveDeclarations: Consecutive
+AlignOperands: AlignAfterOperator
